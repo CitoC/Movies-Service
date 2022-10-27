@@ -1,0 +1,43 @@
+name: GitHub Classroom Workflow
+
+on: [push]
+
+jobs:
+  build:
+    name: Autograding
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Checkout Tests
+        run: |
+          wget https://raw.githubusercontent.com/GitCodings/Stack-BE2-Movies-Service-Starter/main/pom.xml -O pom.xml;
+          wget https://raw.githubusercontent.com/GitCodings/Stack-BE2-Movies-Service-Starter/main/src/test/java/com/gitcodings/stack/movies/MoviesServiceTest.java -O src/test/java/com/gitcodings/stack/movies/MoviesServiceTest.java;
+          wget https://raw.githubusercontent.com/GitCodings/Stack-BE2-Movies-Service-Starter/main/src/test/resources/application.yml -O src/test/resources/application.yml;
+          wget https://raw.githubusercontent.com/GitCodings/Stack-BE2-Movies-Service-Starter/main/src/test/resources/expected-models.json -O src/test/resources/expected-models.json;
+          wget https://raw.githubusercontent.com/GitCodings/Stack-BE2-Movies-Service-Starter/main/src/test/resources/users.json -O src/test/resources/users.json;
+      - name: Checkout DB
+        run: |
+          wget https://raw.githubusercontent.com/GitCodings/Stack-Database/main/movies/movies_genre.sql -O db/movies_genre.sql;
+          wget https://raw.githubusercontent.com/GitCodings/Stack-Database/main/movies/movies_person.sql -O db/movies_person.sql;
+          wget https://raw.githubusercontent.com/GitCodings/Stack-Database/main/movies/movies_movie.sql -O db/movies_movie.sql;
+          wget https://raw.githubusercontent.com/GitCodings/Stack-Database/main/movies/movies_movie_genre.sql -O db/movies_movie_genre.sql;
+          wget https://raw.githubusercontent.com/GitCodings/Stack-Database/main/movies/movies_movie_person.sql -O db/movies_movie_person.sql;
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      - name: Install MySQL
+        run: brew install mysql;
+      - name: Setup DB
+        run: |
+          mysql.server start;
+          mysql -uroot < db/schema.sql;
+          mysql -uroot < db/movies_genre.sql;
+          mysql -uroot < db/movies_person.sql;
+          mysql -uroot < db/movies_movie.sql;
+          mysql -uroot < db/movies_movie_genre.sql;
+          mysql -uroot < db/movies_movie_person.sql;
+      - name: Autograder
+        uses: education/autograding@v1
