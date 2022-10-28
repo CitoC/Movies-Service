@@ -6,3 +6,9 @@
 /logs
 
 .DS_Store
+
+/db/movies_person.sql
+/db/movies_genre.sql
+/db/movies_movie.sql
+/db/movies_movie_genre.sql
+/db/movies_movie_person.sql
