@@ -8,8 +8,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class MovieRepo
 {
+    private final NamedParameterJdbcTemplate template;
+
     @Autowired
     public MovieRepo(ObjectMapper objectMapper, NamedParameterJdbcTemplate template)
     {
+        this.template = template;
     }
 }
