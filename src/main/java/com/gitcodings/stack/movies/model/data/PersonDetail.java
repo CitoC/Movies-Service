@@ -1,6 +1,5 @@
 package com.gitcodings.stack.movies.model.data;
 
-
 public class PersonDetail {
     private Long personId;
     private String name;

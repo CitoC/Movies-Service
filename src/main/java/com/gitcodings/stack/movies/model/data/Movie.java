@@ -2,7 +2,6 @@ package com.gitcodings.stack.movies.model.data;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gitcodings.stack.core.result.Result;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Movie {

@@ -3,7 +3,7 @@ package com.gitcodings.stack.movies.model.data;
 public class MovieDetail {
     private Long id;
     private String title;
-    private String year;
+    private Integer year;
     private String director;
     private Double rating;
     private Long numVotes;
@@ -32,11 +32,11 @@ public class MovieDetail {
         return this;
     }
 
-    public String getYear() {
+    public Integer getYear() {
         return year;
     }
 
-    public MovieDetail setYear(String year) {
+    public MovieDetail setYear(Integer year) {
         this.year = year;
         return this;
     }

@@ -1,12 +1,13 @@
 package com.gitcodings.stack.movies.rest;
 
+import com.gitcodings.stack.core.result.MoviesResults;
+import com.gitcodings.stack.movies.model.data.Genre;
+import com.gitcodings.stack.movies.model.data.MovieDetail;
+import com.gitcodings.stack.movies.model.data.Person;
 import com.gitcodings.stack.movies.model.request.MovieByPersonIdRequest;
 import com.gitcodings.stack.movies.model.request.MovieRequest;
-import com.gitcodings.stack.movies.model.request.PersonRequest;
 import com.gitcodings.stack.movies.model.response.MovieByMovieIdResponse;
 import com.gitcodings.stack.movies.model.response.MovieResponse;
-import com.gitcodings.stack.movies.model.response.PersonByPersonIdResponse;
-import com.gitcodings.stack.movies.model.response.PersonResponse;
 import com.gitcodings.stack.movies.repo.MovieRepo;
 import com.gitcodings.stack.movies.util.Validate;
 import com.nimbusds.jwt.SignedJWT;
@@ -15,10 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.swing.*;
+import java.util.List;
 
 @RestController
 public class MovieController
@@ -52,20 +52,38 @@ public class MovieController
     public ResponseEntity<MovieByMovieIdResponse> movieSearchByMovieId(@AuthenticationPrincipal SignedJWT user,
                                                                        @PathVariable Long movieId)
     {
-        return null;
-    }
+        // SignedJWT is being intentionally omitted
+        // Is this for role?
 
-    @GetMapping("/person/search")
-    public ResponseEntity<PersonResponse> personSearch(@AuthenticationPrincipal SignedJWT user,
-                                                       PersonRequest request)
-    {
-        return null;
-    }
+        // go into database and search for the record with movieId
+        // if found return MovieDetail, if not return null
+        MovieDetail movie = repo.selectMovieDetail(movieId);
 
-    @GetMapping("/person/{personId}")
-    public ResponseEntity<PersonByPersonIdResponse> personSearchByPersonId(@AuthenticationPrincipal SignedJWT user,
-                                                                           @PathVariable Long personId)
-    {
-        return null;
+        // movie is not found
+        if (movie == null)
+        {
+            MovieByMovieIdResponse response = new MovieByMovieIdResponse()
+                    .setResult(MoviesResults.NO_MOVIE_WITH_ID_FOUND);
+
+            return ResponseEntity
+                    .status(response.getResult().status())
+                    .body(response);
+        }
+
+        // movie is found
+        // query in database for other infos
+        // genres and persons could be missing (null)
+        List<Genre> genres = repo.selectMovieGenres(movieId);
+        List<Person> persons = repo.selectMoviePersons(movieId);
+
+        MovieByMovieIdResponse response = new MovieByMovieIdResponse()
+                .setResult(MoviesResults.MOVIE_WITH_ID_FOUND)
+                .setMovie(movie)
+                .setGenres(genres)
+                .setPersons(persons);
+
+        return ResponseEntity
+                .status(response.getResult().status())
+                .body(response);
     }
 }
