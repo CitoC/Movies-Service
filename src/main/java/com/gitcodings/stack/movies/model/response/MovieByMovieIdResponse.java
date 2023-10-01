@@ -5,8 +5,10 @@ import com.gitcodings.stack.core.result.Result;
 import com.gitcodings.stack.movies.model.data.Genre;
 import com.gitcodings.stack.movies.model.data.MovieDetail;
 import com.gitcodings.stack.movies.model.data.Person;
+import com.gitcodings.stack.movies.model.data.PersonDetail;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MovieByMovieIdResponse {

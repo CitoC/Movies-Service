@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -533,7 +534,7 @@ public class MoviesServiceTest
     }
 
     // Movie By ID Tests
-
+    // cannot pass this test due to ordering
     @Test
     public void movieById()
         throws Exception
@@ -546,7 +547,10 @@ public class MoviesServiceTest
                     .andExpect(jsonPath("movie").value(getModel("movieById.movie")))
                     .andExpect(jsonPath("genres").value(getModel("movieById.genres")))
                     .andExpect(jsonPath("persons").value(getModel("movieById.persons")));
+//                    .andExpect(jsonPath("genres", containsInAnyOrder(getModel("movieById.genres"))))
+//                    .andExpect(jsonPath("persons", containsInAnyOrder(getModel("movieById.persons"))));
     }
+
 
     @Test
     public void movieByIdNoneFound()

@@ -1,15 +1,23 @@
 package com.gitcodings.stack.movies.model.data;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonPropertyOrder({"name", "id"})
 public class Person {
-    private Long personId;
+    private Long id;
     private String name;
 
-    public Long getPersonId() {
-        return personId;
+//    public Person(Long id, String name) {
+//        this.id = id;
+//        this.name = name;
+//    }
+
+    public Long getId() {
+        return id;
     }
 
-    public Person setPersonId(Long personId) {
-        this.personId = personId;
+    public Person setId(Long id) {
+        this.id = id;
         return this;
     }
 

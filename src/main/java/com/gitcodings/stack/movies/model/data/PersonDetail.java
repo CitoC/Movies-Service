@@ -1,7 +1,7 @@
 package com.gitcodings.stack.movies.model.data;
 
 public class PersonDetail {
-    private Long personId;
+    private Long id;
     private String name;
     private String birthday = null;
     private String biography = null;
@@ -9,12 +9,12 @@ public class PersonDetail {
     private Float popularity = null;
     private String profilePath = null;
 
-    public Long getPersonId() {
-        return personId;
+    public Long getId() {
+        return id;
     }
 
-    public PersonDetail setPersonId(Long personId) {
-        this.personId = personId;
+    public PersonDetail setId(Long id) {
+        this.id = id;
         return this;
     }
 

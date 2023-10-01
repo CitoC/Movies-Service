@@ -2,10 +2,11 @@ package com.gitcodings.stack.movies.model.data;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gitcodings.stack.core.result.Result;
+import lombok.ToString;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
+@ToString
 public class Movie {
-    private Result result;
     private Long id;
     private String title;
     private Integer year;
@@ -14,15 +15,6 @@ public class Movie {
     private String backdropPath;
     private String posterPath;
     private Boolean hidden;
-
-    public Result getResult() {
-        return result;
-    }
-
-    public Movie setResult(Result result) {
-        this.result = result;
-        return this;
-    }
 
     public Long getId() {
         return id;

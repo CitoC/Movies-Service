@@ -1,15 +1,18 @@
 package com.gitcodings.stack.movies.model.data;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonPropertyOrder({"name", "id"})
 public class Genre {
-    private Long genreId;
+    private Long id;
     private String name;
 
-    public Long getGenreId() {
-        return genreId;
+    public Long getId() {
+        return id;
     }
 
-    public Genre setGenreId(Long genreId) {
-        this.genreId = genreId;
+    public Genre setId(Long id) {
+        this.id = id;
         return this;
     }
 
@@ -20,5 +23,13 @@ public class Genre {
     public Genre setName(String name) {
         this.name = name;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "Genre{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }
