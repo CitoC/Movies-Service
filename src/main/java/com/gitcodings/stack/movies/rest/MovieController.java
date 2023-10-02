@@ -47,10 +47,17 @@ public class MovieController
 
     @GetMapping("/movie/search")
     public ResponseEntity<MovieResponse> movieSearch(@AuthenticationPrincipal SignedJWT user,
-                                                     MovieRequest request)
+                                                     MovieRequest request) throws ParseException
     {
+        // check the roles of user
+        List<String> roles = user.getJWTClaimsSet().getStringListClaim(JWTManager.CLAIM_ROLES);
+        boolean hasPrivilege =  roles.contains("ADMIN") || roles.contains("EMPLOYEE");
+
         List<Movie> movies = movieService.searchMovies(request);
 
+        if (!hasPrivilege) {
+            movies = movieService.filterHidden(movies);
+        }
 
         MovieResponse response = new MovieResponse();
         if (movies == null || movies.isEmpty()) {

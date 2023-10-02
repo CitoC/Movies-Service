@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @Service
 public class MovieService {
@@ -22,8 +23,8 @@ public class MovieService {
     //
     public List<Movie> searchMovies(MovieRequest movie) {
         // lists of allowed options for various parameters
-        List<String> validOrderBy = Arrays.asList("title", "year", "genre");   // apparently you cannot order by director
-        List<String> validDirection = Arrays.asList("asce", "desc");
+        List<String> validOrderBy = Arrays.asList("title", "year", "genre", "rating");   // apparently you cannot order by director
+        List<String> validDirection = Arrays.asList("asc", "desc");
         List<Integer> validLimit = Arrays.asList(10,25,50,100);
 
         // Check if the orderBy value is valid by comparing it to a list of allowed options using a stream
@@ -49,5 +50,9 @@ public class MovieService {
 
         // Error-checking done from this point
         return repo.getMovie(movie);
+    }
+
+    public List<Movie> filterHidden(List<Movie> movies) {
+        return movies.stream().filter(movie -> !movie.getHidden()).collect(Collectors.toList());
     }
 }

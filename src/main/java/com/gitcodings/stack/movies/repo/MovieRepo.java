@@ -191,7 +191,7 @@ public class MovieRepo
         }
 
         if (movie.getYear() != null) {
-            yearQuery = Integer.toString(movie.getYear());
+            yearQuery = movie.getYear() + " ";  // getYear() returns Integer but implicit conversion occurs here
         }
 
         if (movie.getDirector() != null && !movie.getDirector().trim().isEmpty()) {
@@ -217,10 +217,13 @@ public class MovieRepo
         }
 
         if (movie.getDirection() != null) {
+            directionQuery = "";    // clear the default value
             directionQuery = movie.getDirection() + " ";
         }
 
         // Only include the WHERE clause if at least one search term is provided
+        // A note about the whereClause is that the table aliases are hard-coded. An alternate
+        // way to this is maybe use string interpolation with some final
         String whereClause = "";
         if (!titleQuery.isEmpty() || !yearQuery.isEmpty() || !directorQuery.isEmpty() || !genreQuery.isEmpty()) {
             whereClause = "WHERE ";
@@ -234,42 +237,46 @@ public class MovieRepo
                 whereClause += "p.name LIKE '%" + directorQuery + "%' AND ";
             }
             if (!genreQuery.isEmpty()) {
-                whereClause += "m.genre LIKE '%" + genreQuery + "%' AND ";
+                whereClause += "g.name LIKE '%" + genreQuery + "%' AND ";
             }
             whereClause = whereClause.substring(0, whereClause.length() - 5); // Remove the last "AND"
         }
 
-        String run = "SELECT JSON_ARRAYAGG(JSON_OBJECT('id', m.id, 'title', m.title, " +
-                "'year', m.year, 'director', p.name, 'rating', m.rating, " +
-                "'backdropPath', m.backdrop_path, 'posterPath', m.poster_path, 'hidden', m.hidden)) as jsonArrayString " +
-                "FROM movies.movie AS m " +
-                "JOIN movies.person AS p ON p.id = m.director_id " +
+        // INSANE sub-query solution for executing ORDER BY and LIMIT before SELECT.
+        // Basically perform a sub-query with all the WHERE and additional clauses,
+        // and then from that sub-query, SELECT using the JSONARRAYARG.
+        // Also added secondary sorting after orderByQuery.
+        // A note about all the JOINs, I'm joining ALL the tables here which is definitely
+        // tanking the performance. An alternative way I have thought about is to
+        // use some kind of conditionals. So for example, if the query contains the genre,
+        // only then we will do a Genre table join. Similarly, only if the query contains
+        // the director, we will do a Person table join.
+        // IMPORTANT: DO NOT CHANGE THE TABLE ALIASES
+        String run = "SELECT JSON_ARRAYAGG(JSON_OBJECT( " +
+                "'id', subquery.id, " +
+                "'title', subquery.title, " +
+                "'director', subquery.director, " +
+                "'rating', subquery.rating, " +
+                "'year', subquery.year, " +
+                "'backdropPath', subquery.backdrop_path, " +
+                "'posterPath', subquery.poster_path, " +
+                "'hidden', subquery.hidden " +
+                ")) as jsonArrayString " +
+                "FROM ( " +
+                " SELECT DISTINCT m.id, m.title, m.year, p.name AS director, m.rating, m.backdrop_path, m.poster_path, m.hidden " +
+                " FROM movies.movie AS m " +
+                " JOIN movies.person AS p ON p.id = m.director_id " +
+                " JOIN movies.movie_genre AS mg ON m.id = mg.movie_id " +
+                " JOIN movies.genre AS g ON mg.genre_id = g.id " +
                 whereClause +
-                orderByQuery + ", m.id " + directionQuery + limitQuery + pageQuery;
+                orderByQuery + directionQuery + ", m.id " + limitQuery + pageQuery +
+                ") AS subquery";
         System.out.println(run);
+
         try {
             String moviesJsonArray = this.template.queryForObject(
-                    // INSANE sub-query solution for executing ORDER BY and LIMIT before SELECT
-                    // Basically perform a sub-query with all the WHERE and additional clauses,
-                    // and then from that sub-query, SELECT using the JSONARRAYARG
-                    // Also added secondary sorting after orderByQuery
-                    "SELECT JSON_ARRAYAGG(JSON_OBJECT( " +
-                            "'id', subquery.id, " +
-                            "'title', subquery.title, " +
-                            "'director', subquery.director, " +
-                            "'rating', subquery.rating, " +
-                            "'year', subquery.year, " +
-                            "'backdropPath', subquery.backdrop_path, " +
-                            "'posterPath', subquery.poster_path, " +
-                            "'hidden', subquery.hidden " +
-                    ")) as jsonArrayString " +
-                    "FROM ( " +
-                            " SELECT m.id, m.title, m.year, p.name AS director, m.rating, m.backdrop_path, m.poster_path, m.hidden " +
-                            " FROM movies.movie AS m " +
-                            " JOIN movies.person AS p ON p.id = m.director_id " +
-                            whereClause +
-                            orderByQuery + ", m.id " + directionQuery + limitQuery + pageQuery +
-                    ") AS subquery",
+
+                    run,
                     new MapSqlParameterSource()
                             .addValue("", 10  , Types.INTEGER),
                     (rs, rowNum) ->
