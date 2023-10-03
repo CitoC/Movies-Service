@@ -6,6 +6,9 @@ CREATE TABLE IF NOT EXISTS movies.genre
     name VARCHAR(32) NOT NULL
 );
 
+-- DECIMAL is equivalent as DECIMAL(10,0)
+-- the decimal parts were omitted
+-- Fixed with a python script
 CREATE TABLE IF NOT EXISTS movies.person
 (
     id INT NOT NULL PRIMARY KEY ,
@@ -17,6 +20,7 @@ CREATE TABLE IF NOT EXISTS movies.person
     profile_path VARCHAR(32) NULL
 );
 
+-- Same problem as above Person table
 CREATE TABLE IF NOT EXISTS movies.movie
 (
     id INT NOT NULL PRIMARY KEY ,

@@ -6,6 +6,8 @@ import com.gitcodings.stack.movies.model.request.PersonRequest;
 import com.gitcodings.stack.movies.model.response.PersonByPersonIdResponse;
 import com.gitcodings.stack.movies.model.response.PersonResponse;
 import com.gitcodings.stack.movies.repo.MovieRepo;
+import com.gitcodings.stack.movies.repo.PersonRepo;
+import com.gitcodings.stack.movies.util.PersonService;
 import com.gitcodings.stack.movies.util.Validate;
 import com.nimbusds.jwt.SignedJWT;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,17 +17,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 public class PersonController
 {
-    private final MovieRepo repo;
+    private final PersonRepo repo;
     private final Validate validate;
+    private final PersonService personService;
 
     @Autowired
-    public PersonController(MovieRepo repo, Validate validate)
+    public PersonController(PersonRepo repo, Validate validate, PersonService personService)
     {
         this.repo = repo;
         this.validate = validate;
+        this.personService = personService;
     }
 
     // FUCK IT. Assume the authentication API is called here and authenticated
@@ -34,7 +40,18 @@ public class PersonController
     public ResponseEntity<PersonResponse> personSearch(@AuthenticationPrincipal SignedJWT user,
                                                        PersonRequest request)
     {
-        return null;
+        List<PersonDetail> persons = personService.searchPersons(request);
+
+        PersonResponse response = new PersonResponse();
+        if (persons == null || persons.isEmpty()) {
+            response.setResult(MoviesResults.NO_PERSONS_FOUND_WITHIN_SEARCH);
+        } else {
+            response.setResult(MoviesResults.PERSONS_FOUND_WITHIN_SEARCH)
+                    .setPersons(persons);
+        }
+
+        return ResponseEntity.status(response.getResult().status())
+                .body(response);
     }
 
     @GetMapping("/person/{personId}")

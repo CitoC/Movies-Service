@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("DuplicatedCode")
 @Repository
 public class MovieRepo
 {
@@ -29,35 +30,6 @@ public class MovieRepo
     {
         this.template = template;
         this.objectMapper = objectMapper;
-    }
-
-    // search the person with the personId and return a PersonDetail
-    // return null if no row is found
-    public PersonDetail selectPersonDetail(Long personId)
-    {
-        try {
-            PersonDetail person = this.template.queryForObject(
-                    "SELECT id, name, birthday, biography, birthplace, popularity, profile_path " +
-                            "FROM movies.person " +
-                            "WHERE id = :personId",
-
-                    new MapSqlParameterSource()
-                            .addValue("personId", personId, Types.INTEGER),
-
-                    (rs, rowNum) ->
-                            new PersonDetail()
-                                    .setId(rs.getLong("id"))
-                                    .setName(rs.getString("name"))
-                                    .setBirthday(rs.getString("birthday"))
-                                    .setBiography(rs.getString("biography"))
-                                    .setBirthplace(rs.getString("birthplace"))
-                                    .setPopularity(rs.getFloat("popularity"))
-                                    .setProfilePath(rs.getString("profile_path"))
-            );
-            return person;
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
     }
 
     public MovieDetail selectMovieDetail(Long movieId)
@@ -271,11 +243,10 @@ public class MovieRepo
                 whereClause +
                 orderByQuery + directionQuery + ", m.id " + limitQuery + pageQuery +
                 ") AS subquery";
-        System.out.println(run);
+
 
         try {
             String moviesJsonArray = this.template.queryForObject(
-
                     run,
                     new MapSqlParameterSource()
                             .addValue("", 10  , Types.INTEGER),

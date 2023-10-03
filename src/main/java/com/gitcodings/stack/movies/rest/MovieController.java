@@ -71,15 +71,6 @@ public class MovieController
                 .body(response);
     }
 
-    @GetMapping("/movie/search/person/{personId}")
-    public ResponseEntity<MovieResponse> movieSearchByPersonId(@AuthenticationPrincipal SignedJWT user,
-                                                               @PathVariable Long personId,
-                                                               MovieByPersonIdRequest request)
-    {
-        return null;
-    }
-
-
     @GetMapping("/movie/{movieId}")
     public ResponseEntity<MovieByMovieIdResponse> movieSearchByMovieId(@AuthenticationPrincipal SignedJWT user,
                                                                        @PathVariable Long movieId) throws ParseException {
