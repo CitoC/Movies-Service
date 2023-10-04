@@ -9,7 +9,6 @@ import com.gitcodings.stack.movies.model.response.MovieByMovieIdResponse;
 import com.gitcodings.stack.movies.model.response.MovieResponse;
 import com.gitcodings.stack.movies.repo.MovieRepo;
 import com.gitcodings.stack.movies.util.MovieService;
-import com.gitcodings.stack.movies.util.Validate;
 import com.nimbusds.jwt.SignedJWT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,14 +24,12 @@ import java.util.List;
 public class MovieController
 {
     private final MovieRepo repo;
-    private final Validate validate;
     private final MovieService movieService;
 
     @Autowired
-    public MovieController(MovieRepo repo, Validate validate, MovieService movieService)
+    public MovieController(MovieRepo repo, MovieService movieService)
     {
         this.repo = repo;
-        this.validate = validate;
         this.movieService = movieService;
     }
 

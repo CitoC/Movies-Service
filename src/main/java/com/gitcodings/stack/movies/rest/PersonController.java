@@ -8,7 +8,6 @@ import com.gitcodings.stack.movies.model.response.PersonResponse;
 import com.gitcodings.stack.movies.repo.MovieRepo;
 import com.gitcodings.stack.movies.repo.PersonRepo;
 import com.gitcodings.stack.movies.util.PersonService;
-import com.gitcodings.stack.movies.util.Validate;
 import com.nimbusds.jwt.SignedJWT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,14 +22,12 @@ import java.util.List;
 public class PersonController
 {
     private final PersonRepo repo;
-    private final Validate validate;
     private final PersonService personService;
 
     @Autowired
-    public PersonController(PersonRepo repo, Validate validate, PersonService personService)
+    public PersonController(PersonRepo repo, PersonService personService)
     {
         this.repo = repo;
-        this.validate = validate;
         this.personService = personService;
     }
 
