@@ -146,6 +146,7 @@ public class MovieRepo
         return persons;
     }
 
+    // Retrospective: could do conditional JOIN depending on query options
     public List<Movie> getMovie(MovieRequest movie, boolean canSeeHidden) {
         final int DEFAULT_LIMIT = 10;
         final int DEFAULT_PAGE = 0;

@@ -1,5 +1,6 @@
 package com.gitcodings.stack.movies.model.data;
 
+// Retrospective: MovieDetail could extend from Movie
 public class MovieDetail {
     private Long id;
     private String title;

@@ -83,8 +83,4 @@ public class MovieService {
         // Error-checking done from this point
         return repo.getMovie(personId, request, canSeeHidden);
     }
-
-    public List<Movie> filterHidden(List<Movie> movies) {
-        return movies.stream().filter(movie -> !movie.getHidden()).collect(Collectors.toList());
-    }
 }

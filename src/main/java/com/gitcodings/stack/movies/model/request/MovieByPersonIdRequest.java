@@ -1,5 +1,6 @@
 package com.gitcodings.stack.movies.model.request;
 
+// Retrospective: what if I create a queryOptionsRequest and let other classes (such as MovieRequest)
 public class MovieByPersonIdRequest {
     private Integer limit;
     private Integer page;
