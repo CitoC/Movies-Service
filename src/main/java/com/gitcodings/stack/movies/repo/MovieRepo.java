@@ -3,6 +3,7 @@ package com.gitcodings.stack.movies.repo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gitcodings.stack.movies.model.data.*;
+import com.gitcodings.stack.movies.model.request.MovieByPersonIdRequest;
 import com.gitcodings.stack.movies.model.request.MovieRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -145,7 +146,7 @@ public class MovieRepo
         return persons;
     }
 
-    public List<Movie> getMovie(MovieRequest movie) {
+    public List<Movie> getMovie(MovieRequest movie, boolean canSeeHidden) {
         final int DEFAULT_LIMIT = 10;
         final int DEFAULT_PAGE = 0;
         List<Movie> movies = new ArrayList<>();
@@ -157,6 +158,7 @@ public class MovieRepo
         String pageQuery = "OFFSET " + Integer.toString(DEFAULT_PAGE) + " ";
         String orderByQuery = "ORDER BY m.title ";
         String directionQuery = "ASC ";
+        String hiddenQuery = "";
 
         if (movie.getTitle() != null && !movie.getTitle().trim().isEmpty()) {
             titleQuery = movie.getTitle();
@@ -193,6 +195,9 @@ public class MovieRepo
             directionQuery = movie.getDirection() + " ";
         }
 
+        if (!canSeeHidden) {
+            hiddenQuery = "m.hidden = 0 ";
+        }
         // Only include the WHERE clause if at least one search term is provided
         // A note about the whereClause is that the table aliases are hard-coded. An alternate
         // way to this is maybe use string interpolation with some final
@@ -210,6 +215,9 @@ public class MovieRepo
             }
             if (!genreQuery.isEmpty()) {
                 whereClause += "g.name LIKE '%" + genreQuery + "%' AND ";
+            }
+            if (!hiddenQuery.isEmpty()) {
+                whereClause += hiddenQuery + " AND ";
             }
             whereClause = whereClause.substring(0, whereClause.length() - 5); // Remove the last "AND"
         }
@@ -250,6 +258,80 @@ public class MovieRepo
                     run,
                     new MapSqlParameterSource()
                             .addValue("", 10  , Types.INTEGER),
+                    (rs, rowNum) ->
+                            new String(rs.getString("jsonArrayString"))
+            );
+
+            Movie[] moviesArray = objectMapper.readValue(moviesJsonArray, Movie[].class);
+            movies = Arrays.stream(moviesArray).collect(Collectors.toList());
+
+            // added NullPointerException because NullPointerException is being thrown for the test case moviesSearchNoneFound
+        } catch (NullPointerException | EmptyResultDataAccessException | JsonProcessingException e) {
+            return null;
+        }
+        return movies;
+    }
+
+    // overloaded method
+    public List<Movie> getMovie(Long personId, MovieByPersonIdRequest request, boolean canSeeHidden) {
+        final int DEFAULT_LIMIT = 10;
+        final int DEFAULT_PAGE = 0;
+        List<Movie> movies = new ArrayList<>();
+        String limitQuery = "LIMIT " + Integer.toString(DEFAULT_LIMIT) + " ";
+        String pageQuery = "OFFSET " + Integer.toString(DEFAULT_PAGE) + " ";
+        String orderByQuery = "ORDER BY m.title ";
+        String directionQuery = "ASC ";
+        String hiddenQuery = "";
+
+        if (request.getLimit() != null) {
+            limitQuery = "LIMIT " + Integer.toString(request.getLimit()) + " ";
+        }
+
+        if (request.getPage() != null) {
+            int limit = (request.getLimit() == null) ? DEFAULT_LIMIT : request.getLimit();
+            int offset = (request.getPage() - 1) * limit;  // offset calculation
+            pageQuery = "OFFSET " + Integer.toString(offset) + " ";
+        }
+
+        if (request.getOrderBy() != null) {
+            orderByQuery = "ORDER BY " + request.getOrderBy() + " ";
+        }
+
+        if (request.getDirection() != null) {
+            directionQuery = "";    // clear the default value
+            directionQuery = request.getDirection() + " ";
+        }
+
+        if (!canSeeHidden) {
+            hiddenQuery = "AND m.hidden = 0 ";
+        }
+
+        String run = "SELECT JSON_ARRAYAGG(JSON_OBJECT( " +
+                "'id', subquery.id, " +
+                "'title', subquery.title, " +
+                "'director', subquery.director, " +
+                "'rating', subquery.rating, " +
+                "'year', subquery.year, " +
+                "'backdropPath', subquery.backdrop_path, " +
+                "'posterPath', subquery.poster_path, " +
+                "'hidden', subquery.hidden " +
+                ")) as jsonArrayString " +
+                "FROM ( " +
+                    " SELECT DISTINCT m.id, m.title, m.year, p.name AS director, m.rating, m.backdrop_path, m.poster_path, m.hidden " +
+                    "FROM movies.movie AS m " +
+                    "JOIN movies.movie_person AS mp ON mp.movie_id = m.id " +
+                    "JOIN movies.person AS p ON p.id = m.director_id " +
+                    "WHERE mp.person_id = :personId " + hiddenQuery +
+                orderByQuery + directionQuery + ", m.id " + limitQuery + pageQuery +
+                " ) AS subquery";
+
+        System.out.println(run);
+
+        try {
+            String moviesJsonArray = this.template.queryForObject(
+                    run,
+                    new MapSqlParameterSource()
+                            .addValue("personId", personId, Types.INTEGER),
                     (rs, rowNum) ->
                             new String(rs.getString("jsonArrayString"))
             );

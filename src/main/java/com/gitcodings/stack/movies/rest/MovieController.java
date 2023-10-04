@@ -14,10 +14,7 @@ import com.nimbusds.jwt.SignedJWT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.util.Collections;
@@ -39,10 +36,27 @@ public class MovieController
         this.movieService = movieService;
     }
 
-    @GetMapping("/movie/test")
-    public void test(@RequestParam Integer number) {
-        System.out.println(number.getClass());
-        System.out.println(number);
+    @GetMapping("/movie/search/person/{personId}")
+    public ResponseEntity<MovieResponse> movieSearchByPersonId(@AuthenticationPrincipal SignedJWT user,
+                                                               @PathVariable Long personId,
+                                                               MovieByPersonIdRequest request) throws ParseException
+    {
+        // check the roles of user
+        List<String> roles = user.getJWTClaimsSet().getStringListClaim(JWTManager.CLAIM_ROLES);
+        boolean canSeeHidden =  roles.contains("ADMIN") || roles.contains("EMPLOYEE");
+
+        List<Movie> movies = movieService.searchMovies(personId, request, canSeeHidden);
+
+        MovieResponse response = new MovieResponse();
+        if (movies == null || movies.isEmpty()) {
+            response.setResult(MoviesResults.NO_MOVIES_WITH_PERSON_ID_FOUND);
+        } else {
+            response.setResult(MoviesResults.MOVIES_WITH_PERSON_ID_FOUND)
+                    .setMovies(movies);
+        }
+
+        return ResponseEntity.status(response.getResult().status())
+                .body(response);
     }
 
     @GetMapping("/movie/search")
@@ -51,13 +65,9 @@ public class MovieController
     {
         // check the roles of user
         List<String> roles = user.getJWTClaimsSet().getStringListClaim(JWTManager.CLAIM_ROLES);
-        boolean hasPrivilege =  roles.contains("ADMIN") || roles.contains("EMPLOYEE");
+        boolean canSeeHidden =  roles.contains("ADMIN") || roles.contains("EMPLOYEE");
 
-        List<Movie> movies = movieService.searchMovies(request);
-
-        if (!hasPrivilege) {
-            movies = movieService.filterHidden(movies);
-        }
+        List<Movie> movies = movieService.searchMovies(request, canSeeHidden);
 
         MovieResponse response = new MovieResponse();
         if (movies == null || movies.isEmpty()) {
